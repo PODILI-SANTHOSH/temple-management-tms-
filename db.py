@@ -127,7 +127,6 @@ def init_db():
     except Exception as e:
         print("MongoDB init error:", e)
 
-# User Management Functions
 def create_user(name, email, phone, aadhar, city, password, role='devotee'):
     db = get_mongo_db()
     if db is None:
@@ -179,7 +178,6 @@ def get_user_by_id(user_id):
         print("get_user_by_id error:", e)
         return None
 
-# Booking Management Functions
 def generate_booking_ref(temple_name):
     prefix = "TMP"
     if "Tirupathi" in temple_name or "Tirupati" in temple_name or "TTD" in temple_name:

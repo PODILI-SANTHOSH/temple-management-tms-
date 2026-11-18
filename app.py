@@ -4,19 +4,15 @@ import json
 from functools import wraps
 from dotenv import load_dotenv
 
-# Load environment configuration
 load_dotenv()
 
-# Import Database Layer
 import db
 
 app = Flask(__name__, template_folder="template", static_url_path='/static')
 app.secret_key = os.environ.get('SECRET_KEY', 'temple_management_secret_key_change_in_production')
 
-# Initialize MongoDB database on startup
 db.init_db()
 
-# Decorators for route protection
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -35,17 +31,12 @@ def admin_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
-# Context processor to inject user into templates
 @app.context_processor
 def inject_user():
     user = None
     if session.get('user_id'):
         user = db.get_user_by_id(session['user_id'])
     return dict(current_user=user)
-
-# ==============================================================================
-# AUTHENTICATION ROUTES
-# ==============================================================================
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -101,10 +92,6 @@ def logout():
     flash("You have been signed out successfully. Om Namo Venkateshaya.", "info")
     return redirect(url_for('home'))
 
-# ==============================================================================
-# DEVOTEE PROFILE & ADMIN DASHBOARD ROUTES
-# ==============================================================================
-
 @app.route('/my-bookings')
 @app.route('/profile')
 @login_required
@@ -128,16 +115,11 @@ def admin_dashboard():
 def receipt(booking_ref):
     booking = db.get_booking_by_ref(booking_ref)
     if not booking:
-        # Fallback to latest
         booking = db.get_latest_booking()
     if not booking:
         flash("Pass reference not found.", "warning")
         return redirect(url_for('home'))
     return render_template('receipt.html', booking=booking)
-
-# ==============================================================================
-# MAIN PAGES & TEMPLE SHOWCASE ROUTES
-# ==============================================================================
 
 @app.route('/')
 def home():
@@ -174,10 +156,6 @@ def tirupathi_deva():
 def srilakshmitirupathiamma():
     return render_template("srilakshmitirupathiamma.html")
 
-# ==============================================================================
-# BOOKING SERVICE ROUTES
-# ==============================================================================
-
 @app.route('/paiddarshan')
 @app.route('/paid_darshan')
 def paid_darshan():
@@ -211,10 +189,6 @@ def taxi_booking():
 def vehicle_parking():
     return render_template("vehicle.html")
 
-# ==============================================================================
-# PAYMENT PROCESSING ROUTES
-# ==============================================================================
-
 @app.route('/paid_payment')
 def paid_payment():
     return render_template('paidpayment.html')
@@ -226,10 +200,6 @@ def room_payment():
 @app.route('/vehicle_payment')
 def vehicle_payment():
     return render_template('vehicle_payment.html')
-
-# ==============================================================================
-# REST APIS & ACTIONS
-# ==============================================================================
 
 @app.route('/save_booking', methods=['POST'])
 def save_booking():
@@ -271,10 +241,6 @@ def api_cancel(booking_ref):
         
     success = db.update_booking_status(booking_ref, 'Cancelled')
     return jsonify({'success': success, 'booking_ref': booking_ref})
-
-# ==============================================================================
-# MAIN ENTRY POINT
-# ==============================================================================
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 4450))
